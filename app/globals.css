@@ -31,3 +31,29 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Add to your global CSS or Tailwind CSS file */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151; /* gray-700 */
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #10B981; /* green-500 */
+  border-radius: 8px;
+  border: 2px solid #374151;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #059669; /* green-600 */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #10B981 #374151;
+}

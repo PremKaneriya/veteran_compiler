@@ -223,7 +223,7 @@ console.log("Fibonacci(7):", fibonacci(7));`);
                 <Loader2 size={24} className="animate-spin" />
               </div>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                 {snippets.length === 0 ? (
                   <div className={`text-center py-8 ${textSecondaryClass}`}>
                     No saved snippets yet
@@ -288,7 +288,7 @@ console.log("Fibonacci(7):", fibonacci(7));`);
           <div className={`px-4 py-2 border-b ${borderClass} ${cardBgClass}`}>
             <span className={`text-sm ${textSecondaryClass}`}>Output</span>
           </div>
-          <div className={`flex-1 p-4 ${cardBgClass} overflow-auto`}>
+          <div className={`flex-1 p-4 ${cardBgClass} overflow-auto custom-scrollbar`}>
             <pre
               className={`font-mono text-sm ${
                 isDark ? "text-green-400" : "text-green-600"
