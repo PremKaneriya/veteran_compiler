@@ -10,7 +10,10 @@ import {
   FolderOpen,
   Loader2,
   Github,
-  GithubIcon,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Menu,
 } from "lucide-react";
 
 interface CodeSnippet {
@@ -44,7 +47,24 @@ console.log("Fibonacci(7):", fibonacci(7));`);
   const [snippets, setSnippets] = useState<CodeSnippet[]>([]);
   const [showSnippets, setShowSnippets] = useState(false);
   const [title, setTitle] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isOutputVisible, setIsOutputVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const editorRef = useRef(null);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const loadSnippets = async () => {
     setIsLoadingSnippets(true);
@@ -115,6 +135,7 @@ console.log("Fibonacci(7):", fibonacci(7));`);
     setCode(snippet.code);
     setOutput(snippet.output || "");
     setShowSnippets(false);
+    setIsMobileMenuOpen(false);
   };
 
   const theme = isDark ? "dark" : "light";
@@ -125,15 +146,27 @@ console.log("Fibonacci(7):", fibonacci(7));`);
   const textSecondaryClass = isDark ? "text-gray-300" : "text-gray-600";
 
   return (
-    <div
-      className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-200`}
-    >
+    <div className={`min-h-screen ${bgClass} ${textClass} transition-colors duration-200`}>
       {/* Header */}
-      <div className={`border-b ${borderClass} ${cardBgClass}`}>
-        <div className="flex items-center justify-between px-6 py-4">
-          <h1 className="text-xl font-semibold">Veteran JS Editor</h1>
-
+      <div className={`border-b ${borderClass} ${cardBgClass} sticky top-0 z-20`}>
+        <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+          {/* Logo and Mobile Menu Button */}
           <div className="flex items-center space-x-3">
+            <h1 className="text-lg sm:text-xl font-semibold">Veteran JS Editor</h1>
+            
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`md:hidden p-2 rounded-md hover:${
+                isDark ? "bg-gray-700" : "bg-gray-100"
+              } transition-colors`}
+            >
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+
+          {/* Desktop Controls */}
+          <div className="hidden md:flex items-center space-x-3">
             {/* GitHub Link */}
             <a
               href="https://github.com/PremKaneriya"
@@ -145,10 +178,18 @@ console.log("Fibonacci(7):", fibonacci(7));`);
               title="View on GitHub"
             >
               <Github size={16} />
-              <span className="text-sm font-medium">GitHub</span>
+              <span className="text-sm font-medium hidden lg:inline">GitHub</span>
             </a>
 
             {/* Save Controls */}
+            <input
+              type="text"
+              placeholder="Enter title to save..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={`px-3 py-1.5 rounded-md text-sm border ${borderClass} ${cardBgClass} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-32 lg:w-48`}
+            />
+
             {title && (
               <button
                 onClick={saveCode}
@@ -160,17 +201,9 @@ console.log("Fibonacci(7):", fibonacci(7));`);
                 ) : (
                   <Save size={14} />
                 )}
-                <span>Save</span>
+                <span className="hidden lg:inline">Save</span>
               </button>
             )}
-
-            <input
-              type="text"
-              placeholder="Enter title to save..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className={`px-3 py-1.5 rounded-md text-sm border ${borderClass} ${cardBgClass} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-            />
 
             {/* Snippets */}
             <button
@@ -196,28 +229,129 @@ console.log("Fibonacci(7):", fibonacci(7));`);
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+          </div>
 
-            {/* Run Button */}
-            <button
-              onClick={executeCode}
-              disabled={isExecuting}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white rounded-md transition-colors"
-              title="Run code (Ctrl+Enter)"
+          {/* Mobile Run Button */}
+          <button
+            onClick={executeCode}
+            disabled={isExecuting}
+            className="md:hidden flex items-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white rounded-md text-sm transition-colors"
+          >
+            <Play size={14} />
+          </button>
+
+          {/* Desktop Run Button */}
+          <button
+            onClick={executeCode}
+            disabled={isExecuting}
+            className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white rounded-md transition-colors"
+            title="Run code (Ctrl+Enter)"
+          >
+            <Play size={16} />
+            <span>{isExecuting ? "Running..." : "Run"}</span>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className={`md:hidden border-t ${borderClass} p-4 space-y-3`}>
+            {/* GitHub Link */}
+            <a
+              href="https://github.com/PremKaneriya"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md hover:${
+                isDark ? "bg-gray-700" : "bg-gray-100"
+              } transition-colors`}
             >
-              <Play size={16} />
-              <span>{isExecuting ? "Running..." : "Run"}</span>
+              <Github size={16} />
+              <span className="text-sm font-medium">GitHub</span>
+            </a>
+
+            {/* Save Controls */}
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Enter title to save..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={`w-full px-3 py-2 rounded-md text-sm border ${borderClass} ${cardBgClass} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              />
+              {title && (
+                <button
+                  onClick={saveCode}
+                  disabled={isSaving}
+                  className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 text-white rounded-md text-sm transition-colors"
+                >
+                  {isSaving ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Save size={14} />
+                  )}
+                  <span>Save</span>
+                </button>
+              )}
+            </div>
+
+            {/* Other Controls */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  setShowSnippets(!showSnippets);
+                  if (!showSnippets) {
+                    loadSnippets();
+                  }
+                }}
+                className={`flex-1 flex items-center justify-center space-x-2 p-2 rounded-md hover:${
+                  isDark ? "bg-gray-700" : "bg-gray-100"
+                } transition-colors`}
+              >
+                <FolderOpen size={18} />
+                <span className="text-sm">Snippets</span>
+              </button>
+
+              <button
+                onClick={() => setIsDark(!isDark)}
+                className={`flex-1 flex items-center justify-center space-x-2 p-2 rounded-md hover:${
+                  isDark ? "bg-gray-700" : "bg-gray-100"
+                } transition-colors`}
+              >
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                <span className="text-sm">Theme</span>
+              </button>
+            </div>
+
+            {/* Mobile Output Toggle */}
+            <button
+              onClick={() => setIsOutputVisible(!isOutputVisible)}
+              className={`w-full flex items-center justify-center space-x-2 p-2 rounded-md hover:${
+                isDark ? "bg-gray-700" : "bg-gray-100"
+              } transition-colors`}
+            >
+              {isOutputVisible ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              <span className="text-sm">{isOutputVisible ? 'Hide' : 'Show'} Output</span>
             </button>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Snippets Dropdown */}
       {showSnippets && (
         <div
-          className={`absolute top-16 right-6 w-80 ${cardBgClass} border ${borderClass} rounded-lg shadow-lg z-10`}
+          className={`absolute top-16 sm:top-20 right-3 sm:right-6 w-72 sm:w-80 ${cardBgClass} border ${borderClass} rounded-lg shadow-lg z-10 max-h-96`}
         >
           <div className="p-4">
-            <h3 className="font-medium mb-3">Saved Snippets</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium">Saved Snippets</h3>
+              <button
+                onClick={() => setShowSnippets(false)}
+                className={`p-1 rounded-md hover:${
+                  isDark ? "bg-gray-700" : "bg-gray-100"
+                } transition-colors`}
+              >
+                <X size={16} />
+              </button>
+            </div>
             {isLoadingSnippets ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 size={24} className="animate-spin" />
@@ -237,7 +371,7 @@ console.log("Fibonacci(7):", fibonacci(7));`);
                       } transition-colors`}
                       onClick={() => loadSnippet(snippet)}
                     >
-                      <div className="font-medium text-sm">{snippet.title}</div>
+                      <div className="font-medium text-sm truncate">{snippet.title}</div>
                       <div className={`text-xs ${textSecondaryClass} mt-1`}>
                         {new Date(snippet.createdAt).toLocaleDateString()}
                       </div>
@@ -250,14 +384,24 @@ console.log("Fibonacci(7):", fibonacci(7));`);
         </div>
       )}
 
-      {/* Main Content - Split Pane */}
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Code Editor - Left Side */}
-        <div className="flex-1 flex flex-col">
-          <div className={`px-4 py-2 border-b ${borderClass} ${cardBgClass}`}>
+      {/* Main Content */}
+      <div className="flex flex-col md:flex-row h-[calc(100vh-65px)] sm:h-[calc(100vh-73px)]">
+        {/* Code Editor */}
+        <div className={`flex-1 flex flex-col ${isMobile && !isOutputVisible ? 'h-full' : 'h-1/2 md:h-full'}`}>
+          <div className={`px-3 sm:px-4 py-2 border-b ${borderClass} ${cardBgClass} flex items-center justify-between`}>
             <span className={`text-sm ${textSecondaryClass}`}>Code</span>
+            {isMobile && (
+              <button
+                onClick={() => setIsOutputVisible(!isOutputVisible)}
+                className={`p-1 rounded-md hover:${
+                  isDark ? "bg-gray-700" : "bg-gray-100"
+                } transition-colors`}
+              >
+                {isOutputVisible ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </button>
+            )}
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-h-0">
             <Editor
               height="100%"
               defaultLanguage="javascript"
@@ -266,7 +410,7 @@ console.log("Fibonacci(7):", fibonacci(7));`);
               theme={isDark ? "vs-dark" : "light"}
               options={{
                 minimap: { enabled: false },
-                fontSize: 14,
+                fontSize: isMobile ? 12 : 14,
                 wordWrap: "on",
                 automaticLayout: true,
                 scrollBeyondLastLine: false,
@@ -275,30 +419,69 @@ console.log("Fibonacci(7):", fibonacci(7));`);
                 selectionHighlight: false,
                 overviewRulerBorder: false,
                 hideCursorInOverviewRuler: true,
+                lineNumbers: isMobile ? "off" : "on",
+                folding: !isMobile,
+                lineDecorationsWidth: isMobile ? 0 : undefined,
+                lineNumbersMinChars: isMobile ? 0 : undefined,
               }}
             />
           </div>
         </div>
 
-        {/* Divider */}
-        <div className={`w-px ${isDark ? "bg-gray-700" : "bg-gray-200"}`}></div>
+        {/* Divider - Hidden on mobile */}
+        <div className={`hidden md:block w-px ${isDark ? "bg-gray-700" : "bg-gray-200"}`}></div>
 
-        {/* Output - Right Side */}
-        <div className="flex-1 flex flex-col">
-          <div className={`px-4 py-2 border-b ${borderClass} ${cardBgClass}`}>
-            <span className={`text-sm ${textSecondaryClass}`}>Output</span>
+        {/* Output */}
+        {(isOutputVisible || !isMobile) && (
+          <div className={`flex-1 flex flex-col ${isMobile ? 'h-1/2 border-t' : 'h-full'} ${borderClass}`}>
+            <div className={`px-3 sm:px-4 py-2 border-b ${borderClass} ${cardBgClass}`}>
+              <span className={`text-sm ${textSecondaryClass}`}>Output</span>
+            </div>
+            <div className={`flex-1 p-3 sm:p-4 ${cardBgClass} overflow-auto custom-scrollbar min-h-0`}>
+              <pre
+                className={`font-mono text-xs sm:text-sm ${
+                  isDark ? "text-green-400" : "text-green-600"
+                } whitespace-pre-wrap break-words`}
+              >
+                {output || 'Click "Run" to see output here...'}
+              </pre>
+            </div>
           </div>
-          <div className={`flex-1 p-4 ${cardBgClass} overflow-auto custom-scrollbar`}>
-            <pre
-              className={`font-mono text-sm ${
-                isDark ? "text-green-400" : "text-green-600"
-              } whitespace-pre-wrap`}
-            >
-              {output || 'Click "Run" to see output here...'}
-            </pre>
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* Add custom scrollbar styles */}
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: ${isDark ? '#374151' : '#f3f4f6'};
+          border-radius: 8px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: ${isDark ? '#10B981' : '#059669'};
+          border-radius: 8px;
+          border: 2px solid ${isDark ? '#374151' : '#f3f4f6'};
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: ${isDark ? '#059669' : '#047857'};
+        }
+        
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: ${isDark ? '#10B981 #374151' : '#059669 #f3f4f6'};
+        }
+        
+        @media (max-width: 768px) {
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
